@@ -20,7 +20,7 @@ def broadcast(message):
 
 def encrypt_message(message):
     # Encode the message to bytes
-    message_bytes = message.encode()
+    message_bytes = message.encode('utf-8')
 
     # Create a SHA-256 hash object
     hash_object = hashlib.sha256()
@@ -66,10 +66,9 @@ def handle_client(client):
     while True:
         try:
             message = client.recv(1024)
-            enc_message, key = encrypt_message(message)
-            key_dictionary.append(message, key)
+            encrypted_message, key = encrypt_message(message.decode('utf-8'))
 
-            broadcast(enc_message)
+            broadcast(encrypted_message.encode('utf-8'))
         except:
             index = clients.index(client)
             clients.remove(client)

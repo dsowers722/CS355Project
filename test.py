@@ -3,7 +3,7 @@ import base64
 
 def encrypt_message(message):
     # Encode the message to bytes
-    message_bytes = message.encode()
+    message_bytes = message.encode('utf-8')
 
     # Create a SHA-256 hash object
     hash_object = hashlib.sha256()
@@ -47,7 +47,7 @@ def decrypt_message(encrypted_message, key):
     return decrypted_message
 
 if __name__ == "__main__":
-    message = 'I am a pig'
+    message = 'qian176: qwe'
 
     # Encrypt the message
     encrypted_message, key = encrypt_message(message)
