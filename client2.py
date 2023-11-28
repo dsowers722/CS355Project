@@ -21,7 +21,7 @@ def client_receive():
 
 def client_send():
     while True:
-        message = f'{alias}: {input("")}'
+        message = f'{input("")}'
         client.send(message.encode('utf-8'))
 
 
