@@ -3,6 +3,7 @@ import base64
 import threading
 import socket
 import hashlib
+from cryptography.fernet import Fernet
 host = '127.0.0.1'
 port = 59000
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -12,6 +13,7 @@ clients = []
 aliases = []
 key_dictionary=[]
 file_dict = {}
+key_dict = {}
 
 def broadcast(message):
     for client in clients:
@@ -76,34 +78,19 @@ def handle_client(client):
                 if not data:
                     break
                 # file.write(data)
-                encrypted_message, key = encrypt_message(data.decode('utf-8'))
-                # print(aliases[-1])
+                encrypted_message,key = encrypt_mess_new(data.decode('utf-8'))
+                print(data)
                 if aliases[-1] in file_dict:
-                    file_dict[aliases[-1]].append(encrypted_message.encode('utf-8'))
+                    file_dict[aliases[-1]].append(encrypted_message)
+                    key_dict[encrypted_message] = key
                 else:
-                    file_dict[aliases[-1]] = [encrypted_message.encode('utf-8')]
+                    file_dict[aliases[-1]] = [encrypted_message]
+                    key_dict[encrypted_message] = key
                 # print(file_dict[aliases[-1]])
                 file_size -= len(data)
-                broadcast(encrypted_message.encode('utf-8'))
+                broadcast(encrypted_message)
                 # print(file_dict)
-            found = 0
-            for i in file_dict[aliases[0]]:
-                if aliases[0] != aliases[-1]:
-                    for j in file_dict[aliases[-1]]:
-                        if i == j:
-                            broadcast(f"Files from clients are identical".encode('utf-8'))
-                            found = 1
-                            break
-
-                if aliases[0] == aliases[-1]:
-                    found = 1
-                    broadcast(f"Waiting for files from other clients".encode('utf-8'))
-                    break
-                if found == 1:
-                    break
-            if found == 0:
-                broadcast(f"Files from clients are different".encode('utf-8'))
-
+            compare()
 
             # print("File received successfully")
 
@@ -118,15 +105,37 @@ def handle_client(client):
             break
 # Main function to receive the clients connection
 
-# def compare_files():
-#     if len(aliases) > 1:
-#         print(file_dict[aliases])
-#         for i in file_dict[aliases[0]]:
-#             for j in file_dict[aliases[1]]:
-#                 if i == j:
-#                     broadcast(f"Files from clients are identical".encode('utf-8'))
-#                     break
-#         broadcast(f"Files from clients do not match".encode('utf-8'))
+def encrypt_mess_new(message):
+    key = Fernet.generate_key()
+    fernet = Fernet(key)
+    encMessage = fernet.encrypt(message.encode('utf-8'))
+    return encMessage, key
+
+def decrypt_mess_new(message,key):
+    fernet = Fernet(key)
+    decMessage = fernet.decrypt(message).decode()
+    return decMessage
+
+def compare():
+    found = 0
+    for i in file_dict[aliases[0]]:
+        if aliases[0] != aliases[-1]:
+            for j in file_dict[aliases[-1]]:
+                key_i = key_dict[i]
+                key_j = key_dict[j]
+                if decrypt_mess_new(i,key_i) == decrypt_mess_new(j,key_j):
+                    broadcast(f"Files from clients are identical".encode('utf-8'))
+                    found = 1
+                    break
+
+        if aliases[0] == aliases[-1]:
+            found = 1
+            broadcast(f"Waiting for files from other clients".encode('utf-8'))
+            break
+        if found == 1:
+            break
+    if found == 0:
+        broadcast(f"Files from clients are different".encode('utf-8'))
 
 
 def receive():
