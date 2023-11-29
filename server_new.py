@@ -11,6 +11,7 @@ server.listen()
 clients = []
 aliases = []
 key_dictionary=[]
+file_dict = {}
 
 def broadcast(message):
     for client in clients:
@@ -67,23 +68,28 @@ def handle_client(client):
         try:
             file_name = client.recv(1024).decode()
             file_size = int(client.recv(1024).decode())
-            print(f"Receiving file: {file_name}, Size: {file_size} bytes")
+            print(f"Receiving file: {file_name}, Size: {file_size} bytes, Alias: {aliases[-1]}")
 
             # Receive the file data
-            with open(file_name, 'r') as file:
-                while file_size > 0:
-                    data = client.recv(1024)
-                    if not data:
-                        break
-                    encrypted_message, key = encrypt_message(data.decode('utf-8'))
-                    broadcast(encrypted_message.encode('utf-8'))
-                    file_size -= len(data)
+            while file_size > 0:
+                data = client.recv(1024)
+                if not data:
+                    break
+                # file.write(data)
+                encrypted_message, key = encrypt_message(data.decode('utf-8'))
+                # print(aliases[-1])
+                if aliases[-1] in file_dict:
+                    file_dict[aliases[-1]].append(encrypted_message.encode('utf-8'))
+                else:
+                    file_dict[aliases[-1]] = [encrypted_message.encode('utf-8')]
+                # print(file_dict[aliases[-1]])
+                file_size -= len(data)
+                broadcast(encrypted_message.encode('utf-8'))
+                # print(file_dict)
+            compare_files()
+            # print("File received successfully")
 
-            print("File received successfully")
-            # message = client.recv(1024)
-            # encrypted_message, key = encrypt_message(message.decode('utf-8'))
 
-            # broadcast(encrypted_message.encode('utf-8'))
         except:
             index = clients.index(client)
             clients.remove(client)
@@ -93,6 +99,16 @@ def handle_client(client):
             aliases.remove(alias)
             break
 # Main function to receive the clients connection
+
+def compare_files():
+    if len(aliases) > 1:
+        print(file_dict[aliases])
+        for i in file_dict[aliases[0]]:
+            for j in file_dict[aliases[1]]:
+                if file_dict[aliases[0]][i] == file_dict[aliases[1]][j]:
+                    broadcast(f"Files from clients are identical".encode('utf-8'))
+                    break
+        broadcast(f"Files from clients do not match".encode('utf-8'))
 
 
 def receive():
