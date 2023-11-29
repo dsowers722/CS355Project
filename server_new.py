@@ -79,7 +79,6 @@ def handle_client(client):
                     break
                 # file.write(data)
                 encrypted_message,key = encrypt_mess_new(data.decode('utf-8'))
-                print(data)
                 if aliases[-1] in file_dict:
                     file_dict[aliases[-1]].append(encrypted_message)
                     key_dict[encrypted_message] = key
