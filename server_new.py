@@ -86,7 +86,25 @@ def handle_client(client):
                 file_size -= len(data)
                 broadcast(encrypted_message.encode('utf-8'))
                 # print(file_dict)
-            compare_files()
+            found = 0
+            for i in file_dict[aliases[0]]:
+                if aliases[0] != aliases[-1]:
+                    for j in file_dict[aliases[-1]]:
+                        if i == j:
+                            broadcast(f"Files from clients are identical".encode('utf-8'))
+                            found = 1
+                            break
+
+                if aliases[0] == aliases[-1]:
+                    found = 1
+                    broadcast(f"Waiting for files from other clients".encode('utf-8'))
+                    break
+                if found == 1:
+                    break
+            if found == 0:
+                broadcast(f"Files from clients are different".encode('utf-8'))
+
+
             # print("File received successfully")
 
 
@@ -100,15 +118,15 @@ def handle_client(client):
             break
 # Main function to receive the clients connection
 
-def compare_files():
-    if len(aliases) > 1:
-        print(file_dict[aliases])
-        for i in file_dict[aliases[0]]:
-            for j in file_dict[aliases[1]]:
-                if file_dict[aliases[0]][i] == file_dict[aliases[1]][j]:
-                    broadcast(f"Files from clients are identical".encode('utf-8'))
-                    break
-        broadcast(f"Files from clients do not match".encode('utf-8'))
+# def compare_files():
+#     if len(aliases) > 1:
+#         print(file_dict[aliases])
+#         for i in file_dict[aliases[0]]:
+#             for j in file_dict[aliases[1]]:
+#                 if i == j:
+#                     broadcast(f"Files from clients are identical".encode('utf-8'))
+#                     break
+#         broadcast(f"Files from clients do not match".encode('utf-8'))
 
 
 def receive():
