@@ -23,50 +23,6 @@ def broadcast(message):
 
 # Function to handle clients'connections
 
-def encrypt_message(message):
-    # Encode the message to bytes
-    message_bytes = message.encode('utf-8')
-
-    # Create a SHA-256 hash object
-    hash_object = hashlib.sha256()
-
-    # Update the hash object with the bytes
-    hash_object.update(message_bytes)
-
-    # Get the hexadecimal representation of the digest
-    hashed_message_hex = hash_object.hexdigest()
-
-    # Convert the hexadecimal representation to an integer
-    hashed_message_int = int(hashed_message_hex, 16)
-
-    # Perform XOR operation with the original message's integer representation
-    result_int = hashed_message_int ^ int.from_bytes(message_bytes, byteorder='big')
-
-    # Convert the result back to bytes
-    result_bytes = result_int.to_bytes((result_int.bit_length() + 7) // 8, byteorder='big')
-
-    # Encode the result bytes using base64 for display purposes
-    encrypted_message = base64.b64encode(result_bytes).decode('utf-8')
-
-    return encrypted_message, hashed_message_int
-
-def decrypt_message(encrypted_message, key):
-    # Decode the base64-encoded string to bytes for actual decryption
-    encrypted_bytes = base64.b64decode(encrypted_message.encode('utf-8'))
-
-    # Convert the bytes to an integer
-    result_int = int.from_bytes(encrypted_bytes, byteorder='big')
-
-    # Reverse the XOR operation with the original message's integer representation
-    hashed_message_int = result_int ^ key
-
-    # Convert the hashed message back to bytes
-    hashed_message_bytes = hashed_message_int.to_bytes((hashed_message_int.bit_length() + 7) // 8, byteorder='big')
-
-    # Decode the bytes to get the original message
-    decrypted_message = hashed_message_bytes.decode('utf-8')
-
-    return decrypted_message
 def handle_client(client):
     global count
     while True:
@@ -81,7 +37,7 @@ def handle_client(client):
                 if not data:
                     break
                 # file.write(data)
-                encrypted_message,key = encrypt_mess_new(data.decode('utf-8'))
+                encrypted_message,key = encrypt_message(data.decode('utf-8'))
                 if aliases[-1] in file_dict:
                     file_dict[aliases[-1]].append(encrypted_message)
                     key_dict[encrypted_message] = key
@@ -110,13 +66,13 @@ def handle_client(client):
             break
 # Main function to receive the clients connection
 
-def encrypt_mess_new(message):
+def encrypt_message(message):
     key = Fernet.generate_key()
     fernet = Fernet(key)
     encMessage = fernet.encrypt(message.encode('utf-8'))
     return encMessage, key
 
-def decrypt_mess_new(message,key):
+def decrypt_message(message,key):
     fernet = Fernet(key)
     decMessage = fernet.decrypt(message).decode()
     return decMessage
@@ -128,7 +84,7 @@ def compare():
             for j in file_dict[aliases[-1]]:
                 key_i = key_dict[i]
                 key_j = key_dict[j]
-                if decrypt_mess_new(i,key_i) == decrypt_mess_new(j,key_j):
+                if decrypt_message(i,key_i) == decrypt_message(j,key_j):
                     broadcast(f"Files from clients are identical".encode('utf-8'))
                     found = 1
                     break
