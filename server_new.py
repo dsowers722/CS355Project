@@ -4,6 +4,7 @@ import threading
 import socket
 import hashlib
 from cryptography.fernet import Fernet
+
 host = '127.0.0.1'
 port = 59000
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -14,6 +15,7 @@ aliases = []
 key_dictionary=[]
 file_dict = {}
 key_dict = {}
+count = 0
 
 def broadcast(message):
     for client in clients:
@@ -66,6 +68,7 @@ def decrypt_message(encrypted_message, key):
 
     return decrypted_message
 def handle_client(client):
+    global count
     while True:
         try:
             file_name = client.recv(1024).decode()
@@ -82,14 +85,17 @@ def handle_client(client):
                 if aliases[-1] in file_dict:
                     file_dict[aliases[-1]].append(encrypted_message)
                     key_dict[encrypted_message] = key
+                    count = count + 1
                 else:
                     file_dict[aliases[-1]] = [encrypted_message]
                     key_dict[encrypted_message] = key
+                    count = count + 1
                 # print(file_dict[aliases[-1]])
                 file_size -= len(data)
                 broadcast(encrypted_message)
                 # print(file_dict)
-            compare()
+            if count >= 10:
+                compare()
 
             # print("File received successfully")
 
