@@ -92,7 +92,7 @@ def handle_client(client):
                     count = count + 1
                 # print(file_dict[aliases[-1]])
                 file_size -= len(data)
-                broadcast(encrypted_message)
+                # broadcast(encrypted_message)
                 # print(file_dict)
             if count >= 10:
                 compare()

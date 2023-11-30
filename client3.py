@@ -25,7 +25,6 @@ def client_send():
     while True:
         # Prompt user for file path
         file_path = input('Enter the path of the file you want to send: ')
-        message = input()
 
         # Check if the file exists
         if not os.path.isfile(file_path):
