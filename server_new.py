@@ -1,8 +1,6 @@
 'Chat Room Connection - Client-To-Client'
-import base64
 import threading
 import socket
-import hashlib
 from cryptography.fernet import Fernet
 
 host = '127.0.0.1'
